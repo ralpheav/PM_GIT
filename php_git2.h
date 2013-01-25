@@ -37,6 +37,9 @@
 #  include "Zend/zend_exceptions.h"
 #  include "ext/spl/spl_exceptions.h"
 #  include "ext/standard/php_string.h"
+#  include "TSRM/tsrm_virtual_cwd.h"  //VCWD_POPEN
+#  include "main/streams/php_stream_plain_wrapper.h" //pipe
+#  include "main/php_streams.h" // open & close streams
 #  include <date/php_date.h>
 #  include <git2.h>
 #  include <git2/errors.h>
@@ -64,6 +67,7 @@ extern PHPAPI zend_class_entry *git2_tag_class_entry;
 extern PHPAPI zend_class_entry *git2_odb_class_entry;
 extern PHPAPI zend_class_entry *git2_odb_object_class_entry;
 extern PHPAPI zend_class_entry *git2_backend_class_entry;
+extern PHPAPI zend_class_entry *git2_pmgit_class_entry;
 
 typedef struct{
 	zend_object zo;

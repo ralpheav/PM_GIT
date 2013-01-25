@@ -83,7 +83,7 @@ struct entry_long {
 
 struct entry_srch_key {
 	const char *path;
-	int 	;
+	int 	stage;
 };
 
 /* local declarations */
@@ -274,7 +274,7 @@ int git_index_open(git_index **index_out, const char *index_path)
 	}
 
 	if (git_vector_init(&index->entries, 32, index_cmp) < 0)
-		return -8;
+		return -1;
 
 	index->entries_cmp_path = index_cmp_path;
 	index->entries_search = index_srch;
@@ -1244,17 +1244,18 @@ static size_t read_entry(git_index_entry *dest, const void *buffer, size_t buffe
 
 static int write_header(void **buffer ) // 12 byte
 {
-	index_header *header;
+	struct index_header *header;
 	header = git__malloc(sizeof(struct index_header));
 	header->signature   = INDEX_HEADER_SIG; //('D','I','R','C')
 	header->version     = 0x003; // version 3
 	header->entry_count = 0x000; // no entries
 	*buffer = header;
+	return 0;
 }
 
-static int write_extension(void **buffer ) // 8 byte
+static int write_empty_extension(void **buffer ) // 8 byte
 {
-	index_extension *footer;
+	struct index_extension *footer;
 	footer = git__malloc(sizeof(struct index_extension));
 	footer->signature[0] = 'R';
 	footer->signature[1] = 'E';
@@ -1262,18 +1263,23 @@ static int write_extension(void **buffer ) // 8 byte
 	footer->signature[3] = 'C';
 	footer->extension_size = 0x000;
 	*buffer = footer;
+	return 0;
 }
 
-static int write_index_file(const char* path)
+static int write_index_file( const char* path)
 {
-	git_oid checksum_calculated;
-	git_oid checksum_expected;
-	git_filebuf *file;
+	//git_oid checksum_calculated;
+	//git_oid checksum_expected;
+	//git_filebuf *file;
+	char* filepath = git__malloc(sizeof(char*)); // let's try
+	strcpy(filepath, path);
 	void *buffer;
 	buffer = git__malloc(sizeof(20));
 	write_header(&buffer);
-	write_extension(&(buffer+12));//no
-	git_filebuf_create( file, path);
+	void *second = buffer + 12;
+	write_empty_extension(&second);//no
+	//git_filebuf_create( file, path);
+	return 0;
 }
 
 static int read_header(struct index_header *dest, const void *buffer)
