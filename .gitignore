@@ -1,17 +1,37 @@
-# Object files
 *.o
 
-# Libraries
-*.lib
-*.a
+# ignore temporary files
+tmp/*
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+# ignore tests
+tests/*.php
+tests/*.sh
+tests/*.log
+tests/*.diff
+tests/*.exp
+tests/*.out
 
-# Executables
-*.exe
-*.out
-*.app
+# ignore phpized files
+Makefile.global
+acinclude.m4
+aclocal.m4
+autom4te.cache
+build
+config.*
+configure
+configure*
+install-sh
+iltmain.sh
+missing
+mkinstalldirs
+run-tests.php
+*.lo
+.deps
+.libs
+libtool
+Makefile*
+modules
+ltmain.sh
+*.la
+tmp-php.ini
+php_test_results*
