@@ -38,8 +38,8 @@
 #  include "ext/spl/spl_exceptions.h"
 #  include "ext/standard/php_string.h"
 #  include "TSRM/tsrm_virtual_cwd.h"  //VCWD_POPEN
-#  include "main/streams/php_stream_plain_wrapper.h" //pipe
-#  include "main/php_streams.h" // open & close streams
+//#  include "main/streams/php_stream_plain_wrapper.h" //pipe
+//#  include "main/php_streams.h" // open & close streams
 #  include <date/php_date.h>
 #  include <git2.h>
 #  include <git2/errors.h>
@@ -171,6 +171,12 @@ typedef struct{
 	git_odb_backend parent;
 	zval *self;
 } php_git2_backend_internal;
+
+
+typedef struct{
+	zend_object zo;
+	git_repository *repository;
+} php_git2_pmgit; // used to get one single functionality
 
 
 #  define PHP_GIT2_GET_OBJECT(STRUCT_NAME, OBJECT) (STRUCT_NAME *) zend_object_store_get_object(OBJECT TSRMLS_CC);

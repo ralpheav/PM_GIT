@@ -23,10 +23,10 @@ static zend_object_handlers git2_repository_object_handlers;
 /*
  * free the object created for this interface
  */
-static void php_git2_pmgit_free_storage(php_git2_repository *object TSRMLS_DC)
+static void php_git2_pmgit_free_storage(php_git2_pmgit *object TSRMLS_DC)
 {
 	if (object->repository != NULL) {
-		git_repository_free( object->repository);
+		git_pmgit_free( object->repository);
 		object->repository = NULL;
 	}
 
@@ -41,7 +41,7 @@ zend_object_value php_git2_pmgit_new(zend_class_entry *ce TSRMLS_DC)
 {
 	zend_object_value retval;
 
-	PHP_GIT2_STD_CREATE_OBJECT(php_git2_repository);
+	PHP_GIT2_STD_CREATE_OBJECT(php_git2_pmgit);
 	retval.handlers = &git2_repository_object_handlers;
 	return retval;
 }
@@ -82,13 +82,13 @@ size_t fetchCommand(const char* command, char** output)
 	char* ret;
     FILE *in;
 	size_t total_readbytes;
-	int command_len;
+	//int command_len;
 	php_stream *stream;
 
 	if ((in = VCWD_POPEN(command, "r")) == NULL)
 	{
 		    php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to execute '%s'", command);
-			RETURN_FALSE;
+			return 0;
 	}
 
 	stream = php_stream_fopen_from_pipe(in, "rb");
@@ -153,7 +153,7 @@ PHP_METHOD(git2_pmgit, __construct)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"s|b", &repositoryPath, &path_len) == FAILURE) {
 		return;
 	}
-
+	strcat(repositoryPath,"/.git");
 	ret = git_repository_init(&repository, repositoryPath, is_bare);
 	if (ret == GIT_OK) {
 		zval *object;
@@ -176,24 +176,25 @@ PHP_METHOD(git2_pmgit, __construct)
 */
 PHP_METHOD(git2_pmgit, add)
 {
-	int                 error = 0;
 	char*               string_value = NULL;
-	int                 string_lenght = NULL;
+	int                 string_lenght = 0;
 	char*				result;
+	char*				command;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &string_value, &string_lenght) == FAILURE) {
-		return -1;
+		return 0;
 	}
-	if (!file)
+	if (!string_value)
 	{
 		//string_value = Z_STRVAL_P( file);
+		command = git__malloc(sizeof(char*));
 		result = git__malloc(sizeof(char*));
 	    strcpy( command, "git add ");
 		strcat(command, string_value);
-   		fetchCommand( command, result);
+   		int len = fetchCommand( command, &result);
 	}
 
-    RETURN_LONG(error);
+    return 0;
 }
 /* }}} */
 
@@ -221,14 +222,14 @@ PHP_METHOD(git2_pmgit, commit)
 		int array_size = pmgit_fast_count_ev(files);
 		if(array_size == 1)
 		{
-			if (zend_hash_find(Z_ARRVAL_P(z_entry),0,(void **)&zvalue) != FAILURE) {
+			if (zend_hash_index_find(Z_ARRVAL_P(files),0,(void **)&zvalue) != FAILURE) {
 				zvaluep = *zvalue;
 				s_value = Z_STRVAL_P( zvaluep);
 			    if( strcmp(s_value,"a") == 0)
 			    {
 			    	result = git__malloc(sizeof(char*));
 			    	const char* command = {"git commit -a\0"};
-			    	fetchCommand( command, result);
+			    	fetchCommand( command, &result);
 			    }
 			}
 	    } else {
@@ -238,7 +239,7 @@ PHP_METHOD(git2_pmgit, commit)
 	    	unsigned int commandSize = strlen( command);
 	    	while( i < array_size)
 	    	{
-	    		if (zend_hash_find(Z_ARRVAL_P(z_entry),(unsigned long)i,(void **)&zvalue) != FAILURE) {
+	    		if (zend_hash_index_find(Z_ARRVAL_P(files),(unsigned long)i,(void **)&zvalue) != FAILURE) {
 	    			zvaluep = *zvalue;
 	    			s_value = Z_STRVAL_P( zvaluep);
 	    			strcat(command, s_value);
@@ -247,7 +248,7 @@ PHP_METHOD(git2_pmgit, commit)
 	    	}
 	    	if(strlen(command) > commandSize) {
 	    		result = git__malloc(sizeof(char*));
-	    		fetchCommand( command, result);
+	    		fetchCommand( command, &result);
 	    	}
 	    }
 	}
@@ -265,6 +266,7 @@ PHP_METHOD(git2_pmgit, checkout)
 	char*               file;
 	int                 len = 0;
 	int                 error = 0;
+	char*               command;
 	//char*               string_value = NULL;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &file, &len) == FAILURE) {
@@ -273,6 +275,7 @@ PHP_METHOD(git2_pmgit, checkout)
 	if (!file)
 	{
 		//string_value = Z_STRVAL_P( file);
+		command = git__malloc(sizeof(char*));
 		result = git__malloc(sizeof(char*));
 	    strcpy( command, "git checkout ");
 		strcat(command, file);
