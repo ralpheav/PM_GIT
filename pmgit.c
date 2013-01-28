@@ -153,8 +153,10 @@ PHP_METHOD(git2_pmgit, __construct)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"s|b", &repositoryPath, &path_len) == FAILURE) {
 		return;
 	}
-	strcat(repositoryPath,"/.git");
-	ret = git_repository_init(&repository, repositoryPath, is_bare);
+	char PMrepositoryPath[ path_len + 5];
+	strcat(PMrepositoryPath,repositoryPath);
+	strcat(PMrepositoryPath,"/.git");
+	ret = git_repository_init(&repository, PMrepositoryPath, is_bare);
 	if (ret == GIT_OK) {
 		zval *object;
 
