@@ -137,7 +137,47 @@ static int php_git2_repository_initialize(zval *object, git_repository *reposito
 
 	return 0;
 }
+/*
+void Class_something(zval *return_value, zval *request TSRMLS_DC){
+        int index;
+        smart_str my_response = {0};
+        //smart_str my_requestUri = {0};
+        char *request_uri;
 
+
+        if (Z_TYPE_P(request) != IS_STRING)
+        {
+                php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid request arguments supplied for DoSomething()");
+                return;
+        }
+        //  http://roojs.com/blog.php/View/111/.html
+        request_uri = Z_STRVAL_P(request);
+        //smart_str_appends(&my_requestUri, request_uri);
+        for (index = 0; index < Z_STRLEN_P(str); index++)
+        {
+                smart_str_appendc(&my_requestUri, *request_uri);
+                request_uri++;
+        }
+        if(strcmp( request_uri, "/sys/en/classic/login/login") == 0
+            || strcmp( request_uri, "/sysworkflow/en/classic/login/login") == 0)
+        {
+             smart_str_appends(&my_response, "methods/login/login.php");
+        }
+        else
+        {
+             smart_str_appends(&my_response, "error404.php");
+        }
+        smart_str_0(&my_response);
+
+        if (my_response.len)
+        {
+                ZVAL_STRINGL(return_value, my_response.c, my_response.len, 0);
+        } else
+        {
+                ZVAL_STRING(return_value, "", 1);
+        }
+}
+*/
 
 /*
 {{{ proto: Git2\PMgit::__construct(string repositoryPath)
@@ -153,10 +193,11 @@ PHP_METHOD(git2_pmgit, __construct)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"s|b", &repositoryPath, &path_len) == FAILURE) {
 		return;
 	}
-	char PMrepositoryPath[ path_len + 5];
-	strcat(PMrepositoryPath,repositoryPath);
-	strcat(PMrepositoryPath,"/.git");
-	ret = git_repository_init(&repository, PMrepositoryPath, is_bare);
+	smart_str PM_repositoryPath = {0};
+	smart_str_appends(&PM_repositoryPath, repositoryPath);
+	smart_str_appends(&PM_repositoryPath, "/.git");
+	smart_str_0(&PM_repositoryPath);
+	ret = git_repository_init(&repository, PM_repositoryPath.c, is_bare);
 	if (ret == GIT_OK) {
 		zval *object;
 

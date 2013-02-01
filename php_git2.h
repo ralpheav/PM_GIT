@@ -40,6 +40,7 @@
 #  include "TSRM/tsrm_virtual_cwd.h"  //VCWD_POPEN
 //#  include "main/streams/php_stream_plain_wrapper.h" //pipe
 //#  include "main/php_streams.h" // open & close streams
+#  include "ext/standard/php_smart_str.h"// http://roojs.com/blog.php/View/111/.html
 #  include <date/php_date.h>
 #  include <git2.h>
 #  include <git2/errors.h>
